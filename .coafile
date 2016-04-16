@@ -1,0 +1,11 @@
+[Default]
+bears = GitCommitBear, LineLengthBear
+files = *.py
+use_spaces = true
+max_line_length = 80
+ignore = test.py
+
+[python]
+bears = SpaceConsistencyBear
+files = *.py
+default_actions = SpaceConsistencyBear:ApplyPatchAction
