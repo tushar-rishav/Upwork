@@ -5,7 +5,7 @@ def main():
     # 'data' stores file name and keyword that user enters as menu options. 
     data = {
     'file': None,
-    'keyword': None
+    'keyword': set()
     }
     # Store 1 or 0 depending on if user wants to try again or not
     tryAgain = 1
@@ -15,7 +15,7 @@ def main():
     while True:
         # Print menu options
         print "1. Input file"
-        print "2. Input keyword"
+        print "2. Input keyword file"
         
 
         try:
@@ -32,7 +32,10 @@ def main():
             # Search for keyword only if the file has been provided by user before.
             # If the file hasn't been provided by user, then it makes no sense to search for keyword
             if data['file'] is not None:
-                data['word'] = raw_input("You've chosen 2nd option. Provide keyword: ")
+                keywordFile = raw_input("You've chosen 2nd option. Provide keyword file: ")
+                with open(keywordFile, 'r') as fp:
+                    for key in fp:
+                        data['keyword'].add(key) # Store the keys extracted from keyword file
                 results = []
                 
                 try:
@@ -42,9 +45,10 @@ def main():
                         for line in lines:
                             # Create a sentence to be able to search for a keyword in line.
                             line_string = ''.join(line)
-                            if data['word'] in line_string:
-                                # If the keyword is found in a line then store the line.
-                                results.append(line[:10])
+                            for key in data['keyword']: # For each keyword search in line
+                                if key in line_string:
+                                    # If the keyword is found in a line then store the line.
+                                    results.append(line[:10])
 
                     # Print table heading
                     print '+{:<50}| {:<50}  | {:<50} | {:<50} | {:<50} | {:<50} | {:<50} | {:<50} | {:<50} | {:<50}+'.format("Date received",
