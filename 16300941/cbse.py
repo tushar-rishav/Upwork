@@ -52,7 +52,14 @@ class Info:
 
         
         req.params.update(params)
-        r = req.get(Info.BASE_URL)
+        while True:
+            try:
+                r = req.get(Info.BASE_URL)
+            except:
+                print "Couldn't connect to Internet. Retrying.."
+                time.sleep(1)
+                continue;
+            break;
         
         raw = r.text.encode('utf-8')
         
@@ -359,14 +366,22 @@ class Scrap:
             school head
         """
         driver = webdriver.PhantomJS(desired_capabilities=DCAP)
-        driver.implicitly_wait(50)
+        driver.implicitly_wait(40)
         print "Fetching.."
-        driver.get(self.url)
-        driver.find_element_by_id("optlist_0").click()
-        key_text = driver.find_element_by_id("keytext")
-        key_text.send_keys('a')
-        key_text.send_keys(Keys.RETURN)
-        time.sleep(2)
+        while True:
+            try:
+                driver.get(self.url)
+                driver.find_element_by_id("optlist_0").click()
+                key_text = driver.find_element_by_id("keytext")
+                key_text.send_keys('a')
+                key_text.send_keys(Keys.RETURN)
+                time.sleep(2)
+            except Exception as e:
+                print(e)
+                print("Retrying..")
+                time.sleep(1)
+                continue;
+            break;
         
         try:
             soup = BeautifulSoup( driver.page_source.encode('utf-8'), 'html.parser')
@@ -384,12 +399,22 @@ class Scrap:
         try:
             for i in xrange(1, self.start):
                 nextBtn = driver.find_element_by_id("Button1")
-                if not nextBtn.get_attribute("disabled"):    
-                    nextBtn.click()
+                if not nextBtn.get_attribute("disabled"):  
+                    print("Ignoring Page {}".format(i))  
+                    while True:
+                        try:
+                            nextBtn.click()
+                        except Exception as e:
+                            print(e)
+                            print("Internet connection failed. Retyring..")
+                            time.sleep(1)
+                            continue;
+                        break;
+
+                    total_count -= per_page
                     time.sleep(1)
                 else:
                     break
-                total_count -= (25 * self.start)
         except Exception as e:
             print e
         print "Total {} Schools found.".format(total_count)
@@ -419,8 +444,11 @@ class Scrap:
 
                 nextBtn = driver.find_element_by_id("Button1")
                 time.sleep(1)
-                if not nextBtn.get_attribute("disabled"):    
-                    nextBtn.click()
+                if not nextBtn.get_attribute("disabled"): 
+                    try:   
+                        nextBtn.click()
+                    except Exception as e:
+                        print(e)
                 else:
                     break
         except KeyboardInterrupt:
@@ -432,7 +460,7 @@ class Scrap:
         print "Data extracted successfully"
         return school_data
 
-database = MySQLDatabase('upwork', user='root',passwd='')
+database = MySQLDatabase('upwork', user='root',passwd='rishav95')
 
 
 class BaseModel(Model):
@@ -492,7 +520,15 @@ class School(BaseModel):
 
 
 def db_init():
-    database.connect()
+    while True:
+        try:
+            database.connect()
+        except OperationalError:
+            print "Couldn't establish BD connection. Retrying.."
+            time.sleep(1)
+            continue;
+        break;
+
     if not School.table_exists():
         database.create_tables([School]) 
 def parse_arg():
